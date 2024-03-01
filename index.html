@@ -11,9 +11,20 @@
 <div class="container mx-auto p-8">
     <h1 class="text-2xl font-bold mb-4">User Management</h1>
 
-    <!-- Search User Form -->
-    <form id="searchUserForm" class="mb-4">
+    <!-- Search and Filter Form -->
+    <form id="searchFilterForm" class="mb-4 flex items-center space-x-4">
         <input type="text" id="searchUser" class="p-2 border border-gray-300" placeholder="Search by Name" oninput="searchUsers()">
+        
+        <div class="relative inline-block text-left">
+            <select id="packageFilter" class="p-2 border border-gray-300" onchange="filterUsers()">
+                <option value="all" selected>Show All Packages</option>
+                <option value="8Mbps">8Mbps</option>
+                <option value="10Mbps">10Mbps</option>
+                <option value="12Mbps">12Mbps</option>
+                <option value="15Mbps">15Mbps</option>
+                <option value="20Mbps">20Mbps</option>
+            </select>
+        </div>
     </form>
 
     <!-- User List -->
@@ -85,6 +96,7 @@
     const payAmountInput = document.getElementById('payAmount');
     const dueAmountInput = document.getElementById('dueAmount');
     const searchUserInput = document.getElementById('searchUser');
+    const packageFilterInput = document.getElementById('packageFilter');
     
     const editUserModal = document.getElementById('editUserModal');
     const editUserIdInput = document.getElementById('editUserId');
@@ -280,6 +292,17 @@
         const searchTerm = searchUserInput.value.trim().toLowerCase();
         const filteredUsers = users.filter(user => user.name.toLowerCase().includes(searchTerm));
         renderUsers(filteredUsers);
+    }
+
+    // Function to filter users by package
+    function filterUsers() {
+        const selectedPackage = packageFilterInput.value;
+        if (selectedPackage === 'all') {
+            renderUsers(users);
+        } else {
+            const filteredUsers = users.filter(user => user.package === selectedPackage);
+            renderUsers(filteredUsers);
+        }
     }
 
     // Initial rendering
