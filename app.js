@@ -1,142 +1,275 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-100">
+const userList = document.getElementById('userList');
+const nameInput = document.getElementById('name');
+const ipAddressInput = document.getElementById('ipAddress');
+const mobileNumberInput = document.getElementById('mobileNumber');
+const packageInput = document.getElementById('package');
+const payAmountInput = document.getElementById('payAmount');
+const dueAmountInput = document.getElementById('dueAmount');
+const searchUserInput = document.getElementById('searchUser');
+const packageFilterInput = document.getElementById('packageFilter');
 
-<div class="container mx-auto p-8">
-    <h1 class="text-2xl font-bold mb-4">User Management</h1>
+const addUserModal = document.getElementById('addUserModal');
+const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
+const editUserModal = document.getElementById('editUserModal');
+const addUserForm = document.getElementById('addUserForm');
+const addPackageInput = document.getElementById('addPackage');
 
-    <!-- User List -->
-    <div id="userList" class="mb-8">
-        <!-- User cards will be added here dynamically -->
-    </div>
+const editUserIdInput = document.getElementById('editUserId');
+const editNameInput = document.getElementById('editName');
+const editIpAddressInput = document.getElementById('editIpAddress');
+const editMobileNumberInput = document.getElementById('editMobileNumber');
+const editPackageInput = document.getElementById('editPackage');
+const editPayAmountInput = document.getElementById('editPayAmount');
+const editDueAmountInput = document.getElementById('editDueAmount');
 
-    <!-- Add User Form -->
-    <form id="addUserForm" class="flex flex-col md:flex-row items-center">
-        <input type="text" id="name" class="rounded-l-md p-2 border border-r-0 border-gray-300 mb-2 md:mb-0" placeholder="Enter Name">
-        <input type="text" id="ipAddress" class="p-2 border border-r-0 border-gray-300 mb-2 md:mb-0" placeholder="Enter IP Address">
-        <input type="text" id="mobileNumber" class="p-2 border border-r-0 border-gray-300 mb-2 md:mb-0" placeholder="Enter Mobile Number">
-        <div class="relative inline-block text-left">
-            <select id="package" class="p-2 border border-r-0 border-gray-300 mb-2 md:mb-0">
-                <option value="" disabled selected>Select Package</option>
-                <option value="8Mbps">8Mbps</option>
-                <option value="10Mbps">10Mbps</option>
-                <option value="12Mbps">12Mbps</option>
-                <option value="15Mbps">15Mbps</option>
-                <option value="20Mbps">20Mbps</option>
-            </select>
-        </div>
-        <input type="number" id="payAmount" class="p-2 border border-r-0 border-gray-300 mb-2 md:mb-0" placeholder="Enter Pay Amount">
-        <input type="number" id="dueAmount" class="rounded-r-md p-2 border border-gray-300 mb-2 md:mb-0" placeholder="Enter Due Amount">
-        <button type="button" onclick="addUser()" class="bg-blue-500 text-white p-2 rounded-md md:rounded-r-md">Add User</button>
-    </form>
-</div>
+const totalPayAmountElement = document.getElementById('totalPayAmount');
+const totalDueAmountElement = document.getElementById('totalDueAmount');
+const totalUserCountElement = document.getElementById('totalUserCount');
+const totalUserActiveElement = document.getElementById('totalUserActive');
 
-<script>
-    const userList = document.getElementById('userList');
-    const nameInput = document.getElementById('name');
-    const ipAddressInput = document.getElementById('ipAddress');
-    const mobileNumberInput = document.getElementById('mobileNumber');
-    const packageInput = document.getElementById('package');
-    const payAmountInput = document.getElementById('payAmount');
-    const dueAmountInput = document.getElementById('dueAmount');
+// Predefined monthly bill values for each package
+const packageMonthlyBill = {
+    '8Mbps': 500,
+    '10Mbps': 600,
+    '12Mbps': 700,
+    '15Mbps': 800,
+    '20Mbps': 1000,
+};
 
-    // Dummy data for initial users
-    const users = [
-        { id: 1, name: 'John Doe', ipAddress: '192.168.1.1', mobileNumber: '1234567890', package: '8Mbps', payAmount: 50, dueAmount: 10 },
-        { id: 2, name: 'Jane Doe', ipAddress: '192.168.1.2', mobileNumber: '9876543210', package: '10Mbps', payAmount: 75, dueAmount: 5 },
-    ];
+// Dummy data for initial users
+const users = [
+    { id: 1, name: 'John Doe', ipAddress: '192.168.1.1', mobileNumber: '1234567890', package: '8Mbps', payAmount: 500, dueAmount: 10 },
+    { id: 2, name: 'Jane Doe', ipAddress: '192.168.1.2', mobileNumber: '9876543210', package: '10Mbps', payAmount: 600, dueAmount: 5 },
+];
 
-    // Function to render users
-    function renderUsers() {
-        userList.innerHTML = '';
-        users.forEach(user => {
-            const card = document.createElement('div');
-            card.className = 'bg-white p-4 mb-2 flex flex-col md:flex-row justify-between items-center';
-            card.innerHTML = `
-                <div>
-                    <p><strong>Name:</strong> ${user.name}</p>
-                    <p><strong>IP Address:</strong> ${user.ipAddress}</p>
-                    <p><strong>Mobile Number:</strong> ${user.mobileNumber}</p>
-                    <p><strong>Package:</strong> ${user.package}</p>
-                    <p><strong>Pay Amount:</strong> $${user.payAmount}</p>
-                    <p><strong>Due Amount:</strong> $${user.dueAmount}</p>
-                </div>
-                <div class="flex items-center">
-                    <button onclick="editUser(${user.id})" class="bg-yellow-500 text-white p-2 rounded-l-md">Edit</button>
-                    <button onclick="deleteUser(${user.id})" class="bg-red-500 text-white p-2 rounded-r-md md:rounded-l-md">Delete</button>
-                </div>
-            `;
-            userList.appendChild(card);
-        });
+// Function to render users
+function renderUsers(filteredUsers = users) {
+    userList.innerHTML = '';
+    let totalPayAmount = 0;
+    let totalDueAmount = 0;
+
+    filteredUsers.forEach(user => {
+        totalPayAmount += user.payAmount;
+        totalDueAmount += user.dueAmount;
+
+        const card = document.createElement('div');
+        card.className = 'bg-white p-4 mb-2 flex flex-col justify-between items-center md:items-start';
+        card.innerHTML = `
+            <div class="">
+                <p><strong>Name:</strong> ${user.name}</p>
+                <p><strong>IP Address:</strong> ${user.ipAddress}</p>
+                <p><strong>Mobile Number:</strong> ${user.mobileNumber}</p>
+                <p><strong>Package:</strong> ${user.package}</p>
+                <p><strong>Pay Amount:</strong> $${user.payAmount}</p>
+                <p><strong>Due Amount:</strong> $${user.dueAmount}</p>
+            </div>
+            <div class="flex items-center mt-2 md:mt-0">
+                <button onclick="openEditUserModal(${user.id})" class="bg-yellow-500 text-white p-2 rounded-l-md">Edit</button>
+                <button onclick="openDeleteConfirmationModal(${user.id})" class="bg-red-500 text-white p-2 rounded-r-md md:rounded-l-md ml-2">Delete</button>
+            </div>
+        `;
+        userList.appendChild(card);
+    });
+
+    // Update total Pay and Due Amounts
+    totalPayAmountElement.textContent = totalPayAmount.toFixed(2);
+    totalDueAmountElement.textContent = totalDueAmount.toFixed(2);
+
+    // Update total user count
+    totalUserCountElement.textContent = filteredUsers.length;
+}
+
+// Function to add a new user
+function addUser() {
+    const name = nameInput.value.trim();
+    const ipAddress = ipAddressInput.value.trim();
+    const mobileNumber = mobileNumberInput.value.trim();
+    const packageValue = packageInput.value.trim();
+    const dueAmount = parseFloat(dueAmountInput.value) || 0;
+
+    // Use predefined monthly bill value for the selected package
+    const payAmount = packageValue ? packageMonthlyBill[packageValue] || 0 : 0;
+
+    if (name && ipAddress && mobileNumber && packageValue && !isNaN(dueAmount)) {
+        const newUser = { 
+            id: Date.now(), 
+            name, 
+            ipAddress, 
+            mobileNumber, 
+            package: packageValue, 
+            payAmount, 
+            dueAmount 
+        };
+        users.push(newUser);
+        renderUsers();
+        
+        // Clear input fields
+        nameInput.value = '';
+        ipAddressInput.value = '';
+        mobileNumberInput.value = '';
+        packageInput.value = '';
+        payAmountInput.value = '';
+        dueAmountInput.value = '';
+
+        // Close the add user modal
+        closeAddUserModal();
+    }
+}
+
+// Function to update Pay Amount based on the selected package
+function updatePayAmount() {
+    const packageValue = packageInput.value.trim();
+    payAmountInput.value = packageValue ? packageMonthlyBill[packageValue] || '' : '';
+}
+
+// Function to open the add user modal
+function openAddUserModal() {
+    // Show the add user modal
+    addUserModal.classList.remove('hidden');
+}
+
+// Function to close the add user modal
+function closeAddUserModal() {
+    // Clear input fields
+    nameInput.value = '';
+    ipAddressInput.value = '';
+    mobileNumberInput.value = '';
+    packageInput.value = '';
+    payAmountInput.value = '';
+    dueAmountInput.value = '';
+
+    // Hide the add user modal
+    addUserModal.classList.add('hidden');
+}
+
+// Function to open the delete confirmation modal
+function openDeleteConfirmationModal(userId) {
+    // Set the current user ID to be deleted
+    deleteConfirmationModal.dataset.userId = userId;
+    // Show the delete confirmation modal
+    deleteConfirmationModal.classList.remove('hidden');
+}
+
+// Function to close the delete confirmation modal
+function closeDeleteConfirmationModal() {
+    // Hide the delete confirmation modal
+    deleteConfirmationModal.classList.add('hidden');
+}
+
+// Function to confirm or cancel the delete operation
+function confirmDelete(isConfirmed) {
+    const userId = parseInt(deleteConfirmationModal.dataset.userId);
+
+    if (isConfirmed && !isNaN(userId)) {
+        // Delete the user
+        deleteUser(userId);
     }
 
-    // Function to add a new user
-    function addUser() {
-        const name = nameInput.value.trim();
-        const ipAddress = ipAddressInput.value.trim();
-        const mobileNumber = mobileNumberInput.value.trim();
-        const packageValue = packageInput.value.trim();
-        const payAmount = parseFloat(payAmountInput.value) || 0;
-        const dueAmount = parseFloat(dueAmountInput.value) || 0;
+    // Close the delete confirmation modal
+    closeDeleteConfirmationModal();
+}
 
-        if (name && ipAddress && mobileNumber && packageValue && !isNaN(payAmount) && !isNaN(dueAmount)) {
-            const newUser = { 
-                id: Date.now(), 
-                name, 
-                ipAddress, 
-                mobileNumber, 
-                package: packageValue, 
-                payAmount, 
-                dueAmount 
-            };
-            users.push(newUser);
-            renderUsers();
-            
-            // Clear input fields
-            nameInput.value = '';
-            ipAddressInput.value = '';
-            mobileNumberInput.value = '';
-            packageInput.value = '';
-            payAmountInput.value = '';
-            dueAmountInput.value = '';
-        }
+// Function to open the edit user modal
+function openEditUserModal(userId) {
+    const userToEdit = users.find(user => user.id === userId);
+
+    if (userToEdit) {
+        editUserIdInput.value = userToEdit.id;
+        editNameInput.value = userToEdit.name;
+        editIpAddressInput.value = userToEdit.ipAddress;
+        editMobileNumberInput.value = userToEdit.mobileNumber;
+        editPackageInput.value = userToEdit.package;
+        editPayAmountInput.value = userToEdit.payAmount;
+        editDueAmountInput.value = userToEdit.dueAmount;
+
+        // Show the edit user modal
+        editUserModal.classList.remove('hidden');
     }
+}
 
-    // Function to edit a user
-    function editUser(userId) {
-        const userToEdit = users.find(user => user.id === userId);
+// Function to update Edit Pay Amount based on the selected package in the edit modal
+function updateEditPayAmount() {
+    const packageValue = editPackageInput.value.trim();
+    editPayAmountInput.value = packageValue ? packageMonthlyBill[packageValue] || '' : '';
+}
 
-        if (userToEdit) {
-            nameInput.value = userToEdit.name;
-            ipAddressInput.value = userToEdit.ipAddress;
-            mobileNumberInput.value = userToEdit.mobileNumber;
-            packageInput.value = userToEdit.package;
-            payAmountInput.value = userToEdit.payAmount;
-            dueAmountInput.value = userToEdit.dueAmount;
+// Function to close the edit user modal
+function closeEditUserModal() {
+    // Clear input fields
+    editUserIdInput.value = '';
+    editNameInput.value = '';
+    editIpAddressInput.value = '';
+    editMobileNumberInput.value = '';
+    editPackageInput.value = '';
+    editPayAmountInput.value = '';
+    editDueAmountInput.value = '';
 
-            // Remove the user from the list
-            deleteUser(userId);
-        }
-    }
+    // Hide the edit user modal
+    editUserModal.classList.add('hidden');
+}
 
-    // Function to delete a user
-    function deleteUser(userId) {
+// Function to update a user
+function updateUser() {
+    const userId = parseInt(editUserIdInput.value);
+    const name = editNameInput.value.trim();
+    const ipAddress = editIpAddressInput.value.trim();
+    const mobileNumber = editMobileNumberInput.value.trim();
+    const packageValue = editPackageInput.value.trim();
+    const payAmount = parseFloat(editPayAmountInput.value) || 0;
+    const dueAmount = parseFloat(editDueAmountInput.value) || 0;
+
+    if (userId && name && ipAddress && mobileNumber && packageValue && !isNaN(dueAmount)) {
         const index = users.findIndex(user => user.id === userId);
+
         if (index !== -1) {
-            users.splice(index, 1);
+            const updatedUser = {
+                id: userId,
+                name,
+                ipAddress,
+                mobileNumber,
+                package: packageValue,
+                payAmount,
+                dueAmount
+            };
+
+            // Update the user in the array
+            users[index] = updatedUser;
+
+            // Render the updated user list
             renderUsers();
+
+            // Close the edit user modal
+            closeEditUserModal();
         }
     }
+}
 
-    // Initial rendering
-    renderUsers();
-</script>
+// Function to delete a user
+function deleteUser(userId) {
+    const index = users.findIndex(user => user.id === userId);
+    if (index !== -1) {
+        users.splice(index, 1);
+        renderUsers();
+    }
+}
 
-</body>
-</html>
+// Function to search users by name
+function searchUsers() {
+    const searchTerm = searchUserInput.value.trim().toLowerCase();
+    const filteredUsers = users.filter(user => user.name.toLowerCase().includes(searchTerm));
+    renderUsers(filteredUsers);
+}
+
+// Function to filter users by package
+function filterUsers() {
+    const selectedPackage = packageFilterInput.value;
+    if (selectedPackage === 'all') {
+        renderUsers(users);
+    } else {
+        const filteredUsers = users.filter(user => user.package === selectedPackage);
+        renderUsers(filteredUsers);
+    }
+}
+
+// Initial rendering
+renderUsers();
