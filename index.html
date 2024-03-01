@@ -162,7 +162,7 @@
             totalDueAmount += user.dueAmount;
 
             const card = document.createElement('div');
-            card.className = 'bg-white p-4 mb-2 flex flex-col md:flex-row justify-between items-center';
+            card.className = 'bg-white p-4 mb-2 flex flex-col justify-between items-center md:items-start';
             card.innerHTML = `
                 <div>
                     <p><strong>Name:</strong> ${user.name}</p>
@@ -172,9 +172,9 @@
                     <p><strong>Pay Amount:</strong> $${user.payAmount}</p>
                     <p><strong>Due Amount:</strong> $${user.dueAmount}</p>
                 </div>
-                <div class="flex items-center">
+                <div class="flex items-center mt-2 md:mt-0">
                     <button onclick="openEditUserModal(${user.id})" class="bg-yellow-500 text-white p-2 rounded-l-md">Edit</button>
-                    <button onclick="openDeleteConfirmationModal(${user.id})" class="bg-red-500 text-white p-2 rounded-r-md md:rounded-l-md">Delete</button>
+                    <button onclick="openDeleteConfirmationModal(${user.id})" class="bg-red-500 text-white p-2 rounded-r-md md:rounded-l-md ml-2">Delete</button>
                 </div>
             `;
             userList.appendChild(card);
