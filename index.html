@@ -8,15 +8,15 @@
 </head>
 <body class="bg-gray-100">
 
-<div class="container mx-auto p-8">
-    <h1 class="text-2xl font-bold mb-4">User Management</h1>
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-2xl font-bold mb-4 text-center">User Management</h1>
 
     <!-- Search and Filter Form -->
-    <form id="searchFilterForm" class="mb-4 flex items-center space-x-4">
-        <input type="text" id="searchUser" class="p-2 border border-gray-300" placeholder="Search by Name" oninput="searchUsers()">
+    <form id="searchFilterForm" class="mb-4 flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
+        <input type="text" id="searchUser" class="p-2 md:w-48 border border-gray-300" placeholder="Search by Name" oninput="searchUsers()">
         
         <div class="relative inline-block text-left">
-            <select id="packageFilter" class="p-2 border border-gray-300" onchange="filterUsers()">
+            <select id="packageFilter" class="p-2 md:w-48 border border-gray-300" onchange="filterUsers()">
                 <option value="all" selected>Show All Packages</option>
                 <option value="8Mbps">8Mbps</option>
                 <option value="10Mbps">10Mbps</option>
@@ -34,7 +34,7 @@
 
     <!-- Add User Modal -->
     <div id="addUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-md">
+        <div class="bg-white p-4 md:p-8 rounded-md w-full md:w-1/2">
             <h2 class="text-2xl font-bold mb-4">Add User</h2>
             <form id="addUserForm" class="flex flex-col">
                 <input type="text" id="name" class="p-2 mb-2" placeholder="Enter Name">
